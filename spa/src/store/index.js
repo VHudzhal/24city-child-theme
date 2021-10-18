@@ -4,20 +4,14 @@ import axios from 'axios'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+
   state: {
     edited: false,
     freshPostId: [],
     media: [],
-    post: [],
-    posts: [],
     mainnews: [],
-    newspost: [],
-    categories: [],
-    currentCat: '',
     show: false,
-    jwt: '',
     postsIdCat:  [],
-    map: new Map,
     arr: [],
     p: []
   },
@@ -79,62 +73,17 @@ export default new Vuex.Store({
   },
   actions: {
     // init function
-    init({commit, dispatch}, getters) {
+    loadNews({commit, getters}, taxonomy) {
 
 
-      // retrieving all media from Wordpress
-      axios.get('wp/v2/media?per_page=30')
-        .then(res => {
-          // pushing medias into state
-          for (let media in res.data) {
-            this.state.media.push(res.data[media])
-          }
-          console.log(this.state.media)
-        })
-        .catch(error => console.log(error))
       axios.get('wp/v2/mainnews?per_page=10')
         .then(res => {
           // pushing posts into state and creating post category name
           for (let post in res.data) {
             res.data[post].name = this.state.map.get(res.data[post].categories[0])
-            this.state.posts.push(res.data[post])
+            this.state.mainnews.push(res.data[post])
           }
           console.log(this.getters.loadedNews)
-        })
-        .catch(error => console.log(error))
-      // retrieving categories from Wordpress
-      axios.get('wp/v2/categories')
-        .then(res => {
-          for (let category in res.data) {
-
-            let id = res.data[category].id
-            // creating badge of posts count for single category
-            axios.get(`wp/v2/categories/${id}?count`)
-              .then(res => {
-                res.data.count = id.count
-              })
-              .catch(err => console.log(err))
-            // pushing retrieved categories into state
-            this.state.categories.push(res.data[category])
-          }
-          // creating Map of categories for reference
-          for (let category of this.getters.loadedCategories) {
-            commit('setMap', { id: category.id, name: category.name })
-          }
-          console.log(this.state.map)
-        })
-        .catch(error => console.log(error))
-
-      // getting all POSTS from Wordpress (30 per page)
-      axios.get('wp/v2/posts?per_page=30')
-        .then(res => {
-
-          // pushing posts into state and creating post category name
-          for (let post in res.data) {
-            res.data[post].name = this.state.map.get(res.data[post].categories[0])
-            this.state.posts.push(res.data[post])
-          }
-          console.log(this.getters.loadedPosts)
         })
         .catch(error => console.log(error))
     },
