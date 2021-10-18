@@ -2,16 +2,15 @@
   <div class="container" v-bind:id="'news-' + newspost.id">
     <transition name="slide" mode="out-in" appear>
       <h1 class="title is-1">
-        <span v-if="newspost.title" v-html="newspost.title.rendered"/>
+        <span v-html="newspost.title.rendered"/>
       </h1>
     </transition>
     <span>sdflksjflksdjflksdkfsdf{{newspost.id}}</span>
     <span class="ekem-id" v-html="newspost.id">{{newspost.id}}</span>
     <transition name="fade" mode="out-in" appear>
-      <img :key="newspost.id"
-           class="card-img-top mt-3 p-2"
-           v-if="newspost.better_featured_image"
-           :src.lazy="newspost.better_featured_image.source_url">
+      <slot name="image">
+        <img v-if="imageSource" :src="imageSource" class="post-img post-img-float">
+      </slot>
       <div v-else :key="newspost.id" class="col-sm-4 offset-sm-4 text-center"
            style="width: 100%; height: 100%;
 			background-color: rgba(131, 151, 136, .2)">
@@ -27,9 +26,11 @@
 
 <script>
 import axios from 'axios'
-
+import store from '../store'
+// import wpMixin from '../mixins/wp-mixin'
 export default {
   name: "NewsPost",
+
   props: {
     id: Number,
     newsType: {
@@ -42,19 +43,29 @@ export default {
           title: { rendered: '' },
           content: { rendered: '' }
         }
-      }
       },
+      imgSize: ''
+      },
+
   },
+//  mixins: [wpMixin],
   data() {
     return {
       newspost: []
     }
   },
-  // beforeMount() {
-  //   this.getNewsPost();
-  // },
+   mounted() {
+     //this.mainnews();
+   },
   apiResponse: '', // initial loading or error messages.
-
+computed:{
+  imageSource() {
+    return this.getImageSource(this.newspost, this.imgSize)
+  },
+  getMainnews() {
+    return this.$store.getters.loadNews
+  }
+},
   methods:
     {
       getNewsPost() {
@@ -65,7 +76,7 @@ export default {
             if (this.newspost === undefined) {
               this.$router.push({name: 'NotFound'})
             }
-            // document.title = this.post.title.rendered
+            console.log(this.newspost)
           })
           .catch(e => {
             console.log(e)
